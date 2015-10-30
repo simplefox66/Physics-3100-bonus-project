@@ -1,0 +1,83 @@
+%number of planets input
+PlanetNumber = input('How many planets do we have - '); 
+
+planet = zeros(PlanetNumber:10);%builds an array to hold all the planets
+%planet array = [ x y z mass forcex forcey forcez velx vely velz]
+
+%simple user input to fill up the planet array with base info
+NumPlan = PlanetNumber;
+while NumPlan> 0 
+    %gives the first three spots in the array positions 
+    planet(NumPlan,1) = input(sprintf('what is the x coordinate of planet number %d - ',NumPlan));
+    planet(NumPlan,2) = input(sprintf('what is the y coordinate of planet number %d - ',NumPlan));
+    planet(NumPlan,3) = input(sprintf('what is the z coordinate of planet number %d - ',NumPlan)); 
+    %gives the fourth spot mass
+    planet(NumPlan,4) = input(sprintf('what is the mass of planet number %d - 'NumPlan));
+    %the last 6 spot in the array are left for the velocity of each planet
+    %and the foce it feels
+    NumPlan = NumPlan - 1;
+end 
+
+%builds the live plot 
+t=0;%Timing is used
+interval=1000;%how long it lasts 
+step = 1;%how it changes 
+while (t < interval)
+    
+    %plots each planet on a graph and then holds till after update
+    NumPlanPos =PlanetNumber;
+    while NumPlanPos>0
+        x = planet(NumPlanPos,1);
+        y = planet(NumPlanPos,2);
+        z = planet(NumPlanPos,3);
+        %choses a color for the planet
+        if NumPlanPos = 1
+            color = 'g->-';
+        elseif NumPlanPos = 2
+            color = 'r->-';
+        elseif NumPlanPos = 3
+            color = 'b->-';
+        elseif NumPlanPos = 4
+            color = 'y->-'
+        elseif NumPlanPos = 5
+            color = 'p->-'
+        end
+        
+        plot3(x,y,z, color);
+        drawnow;
+        pause(0.01)
+        NumPlanPos= NumPlanPos - 1;
+    end
+    
+    %Force updater
+    n=PlanetNumber;
+    m=PlanetNumber;
+    while n>0
+        while m>0
+            %force of planet m --> planet n
+            %find force magnitude with classical gravitaiton constant
+            %find unit vector of focre update force vectors (overwrite)
+        end
+    end
+    
+    %velocity updater
+    a=PlanetNumber;
+    while a >0
+        %force on planet a/mass = velocity * step = veolocity'
+    end
+    
+    %position updater
+    b=PlanetNumber;
+    while b>0
+        %velocity *step = Change in position
+        %add to current position place (make sure negatives carry)
+    end
+    
+t=t+step;    
+end
+        
+        
+        
+        
+        
+        
