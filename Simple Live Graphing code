@@ -1,19 +1,20 @@
 t = 0 ;
 x = 0 ;
 startSpot = 0;
-interv = 1000 ; % considering 1000 samples
-step = 1 ; % lowering step has a number of cycles and then acquire more data
+interv = 100 ; % considering 1000 samples
+step = 0.1 ; % lowering step has a number of cycles and then acquire more data
 while ( t <interv )
-    b = sin(t)+5;
-    x = [ x, b ];
-    plot(x) ;
+    b = 1.5*sin(t);
+    a = 1.5*cos(t);
+    %x = [ a, b , x , 'r->'];
+    plot3(a, b , t, 'r ->', b , a , t , 'b ->') ;
       if ((t/step)-500 < 0)
           startSpot = 0;
       else
           startSpot = (t/step)-500;
-          display('yo');
+          
       end
-      axis([ startSpot, (t/step+50), 0 , 10 ]);
+      axis([ -2, 2, -2 , 2 , 0 ,100]);
       grid
       t = t + step;
       drawnow;
