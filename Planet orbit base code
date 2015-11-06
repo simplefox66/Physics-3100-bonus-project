@@ -1,7 +1,9 @@
+clc
+clear
 %number of planets input
 PlanetNumber = input('How many planets do we have - '); 
-
-planet = zeros(PlanetNumber:10);%builds an array to hold all the planets
+format long;
+planet = zeros(PlanetNumber,10);%builds an array to hold all the planets
 %planet array = [ x y z mass forcex forcey forcez velx vely velz]
 
 %simple user input to fill up the planet array with base info
@@ -12,58 +14,73 @@ while NumPlan> 0
     planet(NumPlan,2) = input(sprintf('what is the y coordinate of planet number %d - ',NumPlan));
     planet(NumPlan,3) = input(sprintf('what is the z coordinate of planet number %d - ',NumPlan)); 
     %gives the fourth spot mass
-    planet(NumPlan,4) = input(sprintf('what is the mass of planet number %d - 'NumPlan));
+    planet(NumPlan,4) = (input(sprintf('what is the mass of planet number %d - ',NumPlan)));
     %the last 6 spot in the array are left for the velocity of each planet
     %and the foce it feels
+    
     NumPlan = NumPlan - 1;
-end 
+    
+end
+clc;
 
-%builds the live plot 
+
 t=0;%Timing is used
 interval=1000;%how long it lasts 
 step = 1;%how it changes 
 while (t < interval)
     
-    %plots each planet on a graph and then holds till after update
-    NumPlanPos =PlanetNumber;
-    while NumPlanPos>0
-        x = planet(NumPlanPos,1);
-        y = planet(NumPlanPos,2);
-        z = planet(NumPlanPos,3);
-        %choses a color for the planet
-        if NumPlanPos = 1
-            color = 'g->-';
-        elseif NumPlanPos = 2
-            color = 'r->-';
-        elseif NumPlanPos = 3
-            color = 'b->-';
-        elseif NumPlanPos = 4
-            color = 'y->-'
-        elseif NumPlanPos = 5
-            color = 'p->-'
-        end
-        
-        plot3(x,y,z, color);
-        drawnow;
-        pause(0.01)
-        NumPlanPos= NumPlanPos - 1;
-    end
-    
     %Force updater
     n=PlanetNumber;
-    m=PlanetNumber;
     while n>0
+        m=PlanetNumber;
+        NewForceX =0;
+        NewForceY =0;
+        NewForceZ =0;
         while m>0
-            %force of planet m --> planet n
-            %find force magnitude with classical gravitaiton constant
-            %find unit vector of focre update force vectors (overwrite)
+
+            if n~=m
+                %force of planet m --> planet n
+                G=(6.67408*10^-3);%gravitational constant-modified to take the mass at (10^10 to start)
+                %find force magnitude with classical gravitaiton constant
+                F=G*((planet(n,4)*planet(m,4))/(((planet(n,1)-planet(m,1))^2)+((planet(n,2)-planet(m,2))^2)+((planet(n,3)-planet(m,3))^2)));
+                %find unit vector of focre update force vectors (overwrite)
+                Distx=(planet(n,1))-(planet(m,1));
+                Disty=(planet(n,2))-(planet(m,2));
+                Distz=(planet(n,3))-(planet(m,3));
+                
+                MagV = sqrt(abs((Distx^2)+(Disty^2)+(Distz^2)));
+                                
+                Unitx= Distx/MagV;
+                Unity= Disty/MagV;
+                Unitz= Distz/MagV;
+                
+                NewForceX = (Unitx * -F)+ NewForceX ;
+                NewForceY = (Unity * -F)+ NewForceY ;
+                NewForceZ = (Unitz * -F)+ NewForceZ ;
+                
+            elseif n == m
+               % display('not doing that');
+            else 
+                display('what the !@*$ happened');
+            end
+            
+            m= m-1;
         end
+        planet(n,5)=NewForceX ;
+        planet(n,6)=NewForceY ;
+        planet(n,7)=NewForceZ ;
+        n= n-1;
     end
-    
+   
     %velocity updater
     a=PlanetNumber;
-    while a >0
-        %force on planet a/mass = velocity * step = veolocity'
+    while a>0      
+        %force on planet a/mass = acceleration * step = 
+        %velocity'+old velocity= velocity+
+        planet(a,8) = ((planet(a,5)/planet(a,4))*step)+planet(a,8);
+        planet(a,9) = ((planet(a,6)/planet(a,4))*step)+planet(a,9);
+        planet(a,10)= ((planet(a,7)/planet(a,4))*step)+planet(a,10);
+        a = a - 1;
     end
     
     %position updater
@@ -71,10 +88,71 @@ while (t < interval)
     while b>0
         %velocity *step = Change in position
         %add to current position place (make sure negatives carry)
+        planet(b,1) = (planet(b,8)*step) + planet(b,1);
+        planet(b,2) = (planet(b,9)*step) + planet(b,2);
+        planet(b,3) = (planet(b,10)*step)+ planet(b,3);
+        b = b - 1; 
     end
     
-t=t+step;    
+    %builds the live plot 
+    %plots each planet on a graph and then holds till after update
+    NumPlanPos =PlanetNumber;
+    hold on
+    while NumPlanPos >0
+        x = planet(NumPlanPos,1);
+        y = planet(NumPlanPos,2);
+        z = planet(NumPlanPos,3);
+        %choses a color for the planet
+        if NumPlanPos == 1
+            color = 'g >-';
+        elseif NumPlanPos == 2
+            color = 'r >-';
+        elseif NumPlanPos == 3
+            color = 'b >-';
+        elseif NumPlanPos == 4
+            color = 'm >-';
+        elseif NumPlanPos == 5
+            color = 'c >-';
+        elseif NumPlanPos == 6
+            color = 'k >-';
+        elseif NumPlanPos == 7
+            color = 'y >-';
+        end
+        
+        plot3(x,y,z, color);
+        
+        NumPlanPos= NumPlanPos - 1;
+    end
+    hold off
+    answer
+    pause(0.1)
+    display(t, 'bottom');
+  
+    %debugging equipment
+    %display(planet(:,1:3));
+    %input(sprintf('continue y/n ',planet));
+    
+    
+    
+t=t+step;  
+%builds in a break point to avoid code that can't be stopped
+    if t>= 999
+        answer = input(' do you want to continue 1 - yes, 2 - no'); 
+        if answer == 1 
+            display(' countinuing in 10');
+            pause(10.0); 
+            t=0; 
+            pause(2.0);
+        elseif answer == 2
+            display(' stopping');
+            quit;
+        else
+            display('i hwave no idea what you said but i am stopping');
+            quit;
+        end 
+    end
 end
+        
         
         
         
