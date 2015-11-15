@@ -37,7 +37,6 @@ while (t < interval)
         NewForceY =0;
         NewForceZ =0;
         while m>0
-
             if n~=m
                 %force of planet m --> planet n
                 G=(6.67408*10^-3);%gravitational constant-modified to take the mass at (10^10 to start)
@@ -97,7 +96,7 @@ while (t < interval)
     %builds the live plot 
     %plots each planet on a graph and then holds till after update
     NumPlanPos =PlanetNumber;
-    hold on
+    hold all
     while NumPlanPos >0
         x = planet(NumPlanPos,1);
         y = planet(NumPlanPos,2);
@@ -124,10 +123,11 @@ while (t < interval)
         NumPlanPos= NumPlanPos - 1;
     end
     hold off
-    answer
+    view(3);
+    %answer
     pause(0.1)
     display(t, 'bottom');
-  
+    grid on
     %debugging equipment
     %display(planet(:,1:3));
     %input(sprintf('continue y/n ',planet));
@@ -137,22 +137,21 @@ while (t < interval)
 t=t+step;  
 %builds in a break point to avoid code that can't be stopped
     if t>= 999
-        answer = input(' do you want to continue 1 - yes, 2 - no'); 
+        answer = input(' do you want to continue 1 - yes, 2 - no '); 
         if answer == 1 
             display(' countinuing in 10');
             pause(10.0); 
             t=0; 
             pause(2.0);
         elseif answer == 2
-            display(' stopping');
-            quit;
+            display(' stopping ');
+            return;
         else
             display('i hwave no idea what you said but i am stopping');
-            quit;
+            return;
         end 
     end
 end
-        
         
         
         
