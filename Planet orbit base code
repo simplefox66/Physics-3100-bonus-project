@@ -1,22 +1,59 @@
 clc
 clear
-%number of planets input
-PlanetNumber = input('How many planets do we have - '); 
-format long;
-planet = zeros(PlanetNumber,10);%builds an array to hold all the planets
-%planet array = [ x y z mass forcex forcey forcez velx vely velz]
+%planets vs. charged bodies
+boolean = 42;
+while (boolean ~= 1 && boolean ~= 0)
+    boolean = input('Enter 1 for planets, 0 for charged particles: ');
+end
+if(boolean == 1)
+    %number of planets input
+    PlanetNumber = input('How many planets do we have - '); 
+    format long;
+    planet = zeros(PlanetNumber,10);%builds an array to hold all the planets
+    %planet array = [ x y z mass forcex forcey forcez velx vely velz]
+        %Brilliant way to avoid using unpleasant Matlab class structure
+else
+    %number of particles input
+    PlanetNumber = input('How many particles do we have: ');
+    format long;
+    planet = zeros(PlanetNumber, 11);&builds array for particles
+    %particle array = [ x y z mass forcex forcey forcez velx vely velz charge]
+        %need additional spot for charge of particles
+end
 
 %simple user input to fill up the planet array with base info
 NumPlan = PlanetNumber;
 while NumPlan> 0 
-    %gives the first three spots in the array positions 
-    planet(NumPlan,1) = input(sprintf('what is the x coordinate of planet number %d - ',NumPlan));
-    planet(NumPlan,2) = input(sprintf('what is the y coordinate of planet number %d - ',NumPlan));
-    planet(NumPlan,3) = input(sprintf('what is the z coordinate of planet number %d - ',NumPlan)); 
-    %gives the fourth spot mass
-    planet(NumPlan,4) = (input(sprintf('what is the mass of planet number %d - ',NumPlan)));
-    %the last 6 spot in the array are left for the velocity of each planet
-    %and the foce it feels
+    if boolean == 1
+        %gives the first three spots in the array positions 
+        planet(NumPlan,1) = input(sprintf('what is the x coordinate of planet number %d - ',NumPlan));
+        planet(NumPlan,2) = input(sprintf('what is the y coordinate of planet number %d - ',NumPlan));
+        planet(NumPlan,3) = input(sprintf('what is the z coordinate of planet number %d - ',NumPlan)); 
+        %gives the fourth spot mass
+        planet(NumPlan,4) = (input(sprintf('what is the mass of planet number %d - ',NumPlan)));
+        %the last 6 spot in the array are left for the velocity of each planet
+        %and the force it feels
+        velocityBoolean = input(sprintf('Would you like to give planet %d an initial velocity (1-yes,0-no): ',NumPlan));
+        if velocityBoolean == 1
+            planet(NumPlan,8) = input(sprintf('What is the x coordinate velocity of planet %d: ',NumPlan));
+            planet(NumPlan,9) = input(sprintf('What is the y coordinate velocity of planet %d: ',NumPlan));
+            planet(NumPlan,10)= input(sprintf('What is the z coordinate velocity of planet %d: ',NumPlan));
+        end
+    else
+        %gives the first three spots in the array positions 
+        planet(NumPlan,1) = input(sprintf('What is the x coordinate of particle number %d - ',NumPlan));
+        planet(NumPlan,2) = input(sprintf('What is the y coordinate of particle number %d - ',NumPlan));
+        planet(NumPlan,3) = input(sprintf('What is the z coordinate of particle number %d - ',NumPlan)); 
+        %gives the fourth spot mass
+        planet(NumPlan,4) = (input(sprintf('What is the mass of particle number %d (in kg*10^-31): ',NumPlan))*10^-31);
+        planet(NumPlan,11) =(input(sprintf('What is the charge of particle %d (in C*10-19): ',NumPlan))*10^-19);
+        velocityBoolean = input(sprintf('Would you like to give particle %d an initial velocity (1-yes,0-no): ',NumPlan));
+        if velocityBoolean == 1
+            planet(NumPlan,8) = input(sprintf('What is the x coordinate velocity of particle %d: ',NumPlan));
+            planet(NumPlan,9) = input(sprintf('What is the y coordinate velocity of particle %d: ',NumPlan));
+            planet(NumPlan,10)= input(sprintf('What is the z coordinate velocity of particle %d: ',NumPlan));
+        end
+    end
     
     NumPlan = NumPlan - 1;
     
@@ -41,11 +78,19 @@ while (t < interval)
                 %force of planet m --> planet n
                 G=(6.67408*10^-3);%gravitational constant-modified to take the mass at (10^10 to start)
                 %find force magnitude with classical gravitaiton constant
-                F=G*((planet(n,4)*planet(m,4))/(((planet(n,1)-planet(m,1))^2)+((planet(n,2)-planet(m,2))^2)+((planet(n,3)-planet(m,3))^2)));
-                %find unit vector of focre update force vectors (overwrite)
+                K=(8.99*10^9);%constant for attraction of charged particles
+                
                 Distx=(planet(n,1))-(planet(m,1));
                 Disty=(planet(n,2))-(planet(m,2));
                 Distz=(planet(n,3))-(planet(m,3));
+                %Brought Dist values above force calculations so they can be used there
+                if boolean == 1
+                    F=G*((planet(n,4)*planet(m,4))/(((planet(n,1)-planet(m,1))^2)+((planet(n,2)-planet(m,2))^2)+((planet(n,3)-planet(m,3))^2)));
+                else
+                    F=K*((planet(n,11)*planet(m,11))/(((Distx)^2)+((Disty)^2)+((Distz)^2)));
+                end
+                %find unit vector of focre update force vectors (overwrite)
+                
                 
                 MagV = sqrt(abs((Distx^2)+(Disty^2)+(Distz^2)));
                                 
@@ -53,9 +98,15 @@ while (t < interval)
                 Unity= Disty/MagV;
                 Unitz= Distz/MagV;
                 
-                NewForceX = (Unitx * -F)+ NewForceX ;
-                NewForceY = (Unity * -F)+ NewForceY ;
-                NewForceZ = (Unitz * -F)+ NewForceZ ;
+                if boolean == 1
+                    NewForceX = (Unitx * -F)+ NewForceX ;
+                    NewForceY = (Unity * -F)+ NewForceY ;
+                    NewForceZ = (Unitz * -F)+ NewForceZ ;
+                else
+                    %force direction needs to be determined by charges
+                    NewForceX = (Unitx * F)+ NewForceX ;
+                    NewForceY = (Unity * F)+ NewForceY ;
+                    NewForceZ = (Unitz * F)+ NewForceZ ;
                 
             elseif n == m
                % display('not doing that');
