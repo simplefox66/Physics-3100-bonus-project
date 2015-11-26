@@ -1,23 +1,27 @@
+
 clc
 clear
 %planets vs. charged bodies
 boolean = 42;
-while (boolean ~= 1 && boolean ~= 0)
-    boolean = input('Enter 1 for planets, 0 for charged particles: ');
+while (boolean ~= 1 && boolean ~= 0 )
+    boolean = input('Enter 1 for planets, 0 for charged particles ');
 end
+
 if(boolean == 1)
     %number of planets input
-    PlanetNumber = input('How many planets do we have - '); 
+    PlanetNumber = input('How many planets do we have: '); 
+    ECC = input('What is the eccentricity of the collisions ');
     format long;
-    planet = zeros(PlanetNumber,10);%builds an array to hold all the planets
-    %planet array = [ x y z mass forcex forcey forcez velx vely velz]
+    planet = zeros(PlanetNumber,13);%builds an array to hold all the planets
+    %planet array = [ x y z mass forcex forcey forcez velx vely velz KE displacement radius]
         %Brilliant way to avoid using unpleasant Matlab class structure
-else
+elseif(boolean == 0)
     %number of particles input
     PlanetNumber = input('How many particles do we have: ');
+    ECC = input('What is the eccentricity of the collisions ');
     format long;
-    planet = zeros(PlanetNumber, 11);&builds array for particles
-    %particle array = [ x y z mass forcex forcey forcez velx vely velz charge]
+    planet = zeros(PlanetNumber, 14);%builds array for particles
+    %particle array = [ x y z mass forcex forcey forcez velx vely velz KE displacement raduis charge]
         %need additional spot for charge of particles
 end
 
@@ -26,12 +30,14 @@ NumPlan = PlanetNumber;
 while NumPlan> 0 
     if boolean == 1
         %gives the first three spots in the array positions 
-        planet(NumPlan,1) = input(sprintf('what is the x coordinate of planet number %d - ',NumPlan));
-        planet(NumPlan,2) = input(sprintf('what is the y coordinate of planet number %d - ',NumPlan));
-        planet(NumPlan,3) = input(sprintf('what is the z coordinate of planet number %d - ',NumPlan)); 
+        planet(NumPlan,1) = input(sprintf('what is the x coordinate of planet number %d: ',NumPlan));
+        planet(NumPlan,2) = input(sprintf('what is the y coordinate of planet number %d: ',NumPlan));
+        planet(NumPlan,3) = input(sprintf('what is the z coordinate of planet number %d: ',NumPlan)); 
         %gives the fourth spot mass
-        planet(NumPlan,4) = (input(sprintf('what is the mass of planet number %d - ',NumPlan)));
-        %the last 6 spot in the array are left for the velocity of each planet
+        planet(NumPlan,4) = (input(sprintf('what is the mass of planet number %d : ',NumPlan)));
+        %the last 8 spot in the array are left for the velocity of each
+        planet(NumPlan,13) = (input(sprintf('what is the radius of planet number %d : ',NumPlan)));
+        %planet the KE of each planet the displacement
         %and the force it feels
         velocityBoolean = input(sprintf('Would you like to give planet %d an initial velocity (1-yes,0-no): ',NumPlan));
         if velocityBoolean == 1
@@ -39,24 +45,23 @@ while NumPlan> 0
             planet(NumPlan,9) = input(sprintf('What is the y coordinate velocity of planet %d: ',NumPlan));
             planet(NumPlan,10)= input(sprintf('What is the z coordinate velocity of planet %d: ',NumPlan));
         end
-    else
+    elseif boolean == 0
         %gives the first three spots in the array positions 
-        planet(NumPlan,1) = input(sprintf('What is the x coordinate of particle number %d - ',NumPlan));
-        planet(NumPlan,2) = input(sprintf('What is the y coordinate of particle number %d - ',NumPlan));
-        planet(NumPlan,3) = input(sprintf('What is the z coordinate of particle number %d - ',NumPlan)); 
+        planet(NumPlan,1) = input(sprintf('What is the x coordinate of particle number %d: ',NumPlan));
+        planet(NumPlan,2) = input(sprintf('What is the y coordinate of particle number %d: ',NumPlan));
+        planet(NumPlan,3) = input(sprintf('What is the z coordinate of particle number %d: ',NumPlan)); 
         %gives the fourth spot mass
         planet(NumPlan,4) = (input(sprintf('What is the mass of particle number %d (in kg*10^-31): ',NumPlan))*10^-31);
-        planet(NumPlan,11) =(input(sprintf('What is the charge of particle %d (in C*10-19): ',NumPlan))*10^-19);
+        planet(NumPlan,14) =(input(sprintf('What is the charge of particle %d (in C*10-19): ',NumPlan))*10^-19);
         velocityBoolean = input(sprintf('Would you like to give particle %d an initial velocity (1-yes,0-no): ',NumPlan));
+        planet(NumPlan,13) = (input(sprintf('what is the radius of particle number %d : ',NumPlan)));
         if velocityBoolean == 1
             planet(NumPlan,8) = input(sprintf('What is the x coordinate velocity of particle %d: ',NumPlan));
             planet(NumPlan,9) = input(sprintf('What is the y coordinate velocity of particle %d: ',NumPlan));
             planet(NumPlan,10)= input(sprintf('What is the z coordinate velocity of particle %d: ',NumPlan));
         end
     end
-    
     NumPlan = NumPlan - 1;
-    
 end
 clc;
 
@@ -68,13 +73,13 @@ while (t < interval)
     
     %Force updater
     n=PlanetNumber;
-    while n>0
+    while (n>0)
         m=PlanetNumber;
         NewForceX =0;
         NewForceY =0;
         NewForceZ =0;
-        while m>0
-            if n~=m
+        while (m>0)
+            if (n~=m)
                 %force of planet m --> planet n
                 G=(6.67408*10^-3);%gravitational constant-modified to take the mass at (10^10 to start)
                 %find force magnitude with classical gravitaiton constant
@@ -87,11 +92,10 @@ while (t < interval)
                 if boolean == 1
                     F=G*((planet(n,4)*planet(m,4))/(((planet(n,1)-planet(m,1))^2)+((planet(n,2)-planet(m,2))^2)+((planet(n,3)-planet(m,3))^2)));
                 else
-                    F=K*((planet(n,11)*planet(m,11))/(((Distx)^2)+((Disty)^2)+((Distz)^2)));
+                    F=K*((planet(n,14)*planet(m,14))/(((Distx)^2)+((Disty)^2)+((Distz)^2)));
                 end
                 %find unit vector of focre update force vectors (overwrite)
-                
-                
+
                 MagV = sqrt(abs((Distx^2)+(Disty^2)+(Distz^2)));
                                 
                 Unitx= Distx/MagV;
@@ -107,13 +111,13 @@ while (t < interval)
                     NewForceX = (Unitx * F)+ NewForceX ;
                     NewForceY = (Unity * F)+ NewForceY ;
                     NewForceZ = (Unitz * F)+ NewForceZ ;
+                end
                 
             elseif n == m
-               % display('not doing that');
+              % display('not doing that');
             else 
                 display('what the !@*$ happened');
             end
-            
             m= m-1;
         end
         planet(n,5)=NewForceX ;
@@ -133,9 +137,55 @@ while (t < interval)
         a = a - 1;
     end
     
+    %Center of mass part
+    Tot = PlanetNumber;
+    VecMassX=0;
+    VecMassY=0;
+    VecMassZ=0;
+    runningMass=0;
+    while Tot>0 
+        VecMassX = (planet(Tot,1)*planet(Tot,4))+ VecMassX;
+        VecMassY = (planet(Tot,2)*planet(Tot,4))+ VecMassY;
+        VecMassZ = (planet(Tot,3)*planet(Tot,4))+ VecMassZ;
+        runningMass = planet(Tot,4)+runningMass;
+        Tot= Tot-1;
+    end
+    CMx =VecMassX/runningMass;
+    CMy =VecMassY/runningMass;
+    CMz =VecMassZ/runningMass;
+    
     %position updater
     b=PlanetNumber;
     while b>0
+        
+        % works with perfectly elastic collisions
+        if b > 1
+            Distx=(planet(b,1))-(planet((b-1),1));
+            Disty=(planet(b,2))-(planet((b-1),2));
+            Distz=(planet(b,3))-(planet((b-1),3));
+            MagX = sqrt(abs((Distx^2)+(Disty^2)+(Distz^2)));
+            %checks to see if the sum of the radius are less than their
+            %distance away
+            if MagX <= planet(b,13) + planet((b-1),13)
+             %they hit each other
+             
+            Tplanet8=planet(b,8);
+            Tplanet9=planet(b,9);
+            Tplanet10=planet(b,10);
+            
+            planet(b,8) = (((planet(b,4)-(ECC*planet((b-1),4)))*planet(b,8))+((planet((b-1),4)+(ECC*planet(b,4)))*planet((b-1),8)))/(planet(b,4)+planet((b-1),4));
+            planet(b,9) = (((planet(b,4)-(ECC*planet((b-1),4)))*planet(b,9))+((planet((b-1),4)+(ECC*planet(b,4)))*planet((b-1),9)))/(planet(b,4)+planet((b-1),4));
+            planet(b,10) = (((planet(b,4)-(ECC*planet((b-1),4)))*planet(b,10))+((planet((b-1),4)+(ECC*planet(b,4)))*planet((b-1),10)))/(planet(b,4)+planet((b-1),4));
+            
+            planet((b-1),8) = (((planet(b,4)+(ECC*planet((b-1),4)))*Tplanet8)+((planet((b-1),4)-(ECC*planet(b,4)))*planet((b-1),8)))/(planet(b,4)+planet((b-1),4));
+            planet((b-1),9) = (((planet(b,4)+(ECC*planet((b-1),4)))*Tplanet9)+((planet((b-1),4)-(ECC*planet(b,4)))*planet((b-1),9)))/(planet(b,4)+planet((b-1),4));
+            planet((b-1),10) = (((planet(b,4)+(ECC*planet((b-1),4)))*Tplanet10)+((planet((b-1),4)-(ECC*planet(b,4)))*planet((b-1),10)))/(planet(b,4)+planet((b-1),4));
+            
+            display(' Pow ');
+            pause(3.0);
+            end
+        end
+        
         %velocity *step = Change in position
         %add to current position place (make sure negatives carry)
         planet(b,1) = (planet(b,8)*step) + planet(b,1);
@@ -144,6 +194,21 @@ while (t < interval)
         b = b - 1; 
     end
     
+    %KE and displacement updater
+    q=PlanetNumber;
+    while q>0
+         %KE =(1/2)mv^2 and s = [x^2 + y^2 + z^2]^(1/2)
+         NewKE = 0;
+         NewS = 0;
+         KE = (1/2)*(planet(q,4))*(((planet(q,8))^2)+((planet(q,9))^2)+((planet(q,10))^2));
+         S = (((planet(q,1))^2)+((planet(q,2))^2)+((planet(q,3))^2))^(1/2);
+         NewKE = KE + NewKE;
+         NewS = S + NewS;
+         planet(q,11)=NewKE ;
+         planet(q,12)=NewS ;
+         q = q-1;
+    end
+     
     %builds the live plot 
     %plots each planet on a graph and then holds till after update
     NumPlanPos =PlanetNumber;
@@ -154,36 +219,70 @@ while (t < interval)
         z = planet(NumPlanPos,3);
         %choses a color for the planet
         if NumPlanPos == 1
-            color = 'g >-';
+            color = 'g d-';
         elseif NumPlanPos == 2
-            color = 'r >-';
+            color = 'r d-';
         elseif NumPlanPos == 3
-            color = 'b >-';
+            color = 'b d-';
         elseif NumPlanPos == 4
-            color = 'm >-';
+            color = 'm d-';
         elseif NumPlanPos == 5
-            color = 'c >-';
+            color = 'c d-';
         elseif NumPlanPos == 6
-            color = 'k >-';
+            color = 'k d-';
         elseif NumPlanPos == 7
-            color = 'y >-';
+            color = 'y d-';
         end
-        
+        subplot(1,2,1);
         plot3(x,y,z, color);
-        
+        xlabel(' x ');
+        ylabel(' y ');
+        zlabel(' Z ');
+        plot3(CMx,CMy,CMz,'k x');
         NumPlanPos= NumPlanPos - 1;
     end
-    hold off
+    
+    grid on
     view(3);
-    %answer
+    hold off
+    
+    hold all 
+    p=PlanetNumber;
+    while p>0
+        %ke plot vs displacment
+        plotKE = planet(p,11);
+        plotS = planet(p,12);
+        
+        %choses a color for the planet
+        if p == 1
+            color = 'g o-';
+        elseif p == 2
+            color = 'r o-';
+        elseif p == 3
+            color = 'b o-';
+        elseif p == 4
+            color = 'm o-';
+        elseif p == 5
+            color = 'c o-';
+        elseif p == 6
+            color = 'k o-';
+        elseif p == 7
+            color = 'y o-';
+        end
+        subplot(1,2,2);
+        plot(plotS, plotKE, color);
+        xlabel(' displacement ' );
+        ylabel(' kinetic engergy');
+        
+        p = p - 1;
+    end
+    hold off
     pause(0.1)
-    display(t, 'bottom');
+    %display(t, 'bottom');
     grid on
     %debugging equipment
     %display(planet(:,1:3));
     %input(sprintf('continue y/n ',planet));
-    
-    
     
 t=t+step;  
 %builds in a break point to avoid code that can't be stopped
@@ -194,7 +293,7 @@ t=t+step;
             pause(10.0); 
             t=0; 
             pause(2.0);
-        elseif answer == 2
+        elseif answer == 2            
             display(' stopping ');
             return;
         else
@@ -203,9 +302,5 @@ t=t+step;
         end 
     end
 end
-        
-        
-        
-        
-        
-        
+       
+       
